@@ -1,0 +1,412 @@
+{
+	"info": {
+		"_postman_id": "d74807c7-eaa4-4e0b-939d-0ac3877a0296",
+		"name": "HSBC WPB - Search Components - Fab",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 - Create a datasource",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{env_search_api_key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{   \r\n    \"description\" : \"Demo files to demonstrate cognitive search capabilities.\",  \r\n    \"type\" : \"azureblob\",\r\n    \"credentials\" : { \r\n    \t\"connectionString\": \"{{env_storage_connection_string}}\"\r\n    },  \r\n\t\"container\" : { \r\n\t\t\"name\" : \"{{env_storage_container}}\",\r\n        \"query\": \"processed\"\r\n\t}\r\n}"
+				},
+				"url": {
+					"raw": "https://{{search_service}}.search.windows.net/datasources/{{prefix}}-datasource?api-version=2020-06-30",
+					"protocol": "https",
+					"host": [
+						"{{search_service}}",
+						"search",
+						"windows",
+						"net"
+					],
+					"path": [
+						"datasources",
+						"{{prefix}}-datasource"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2020-06-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 - Create Index",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{env_search_api_key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"@odata.context\": \"https://wpb-search-service.search.windows.net/$metadata#indexes/$entity\",\r\n  \"@odata.etag\": \"\\\"0x8DAB66646672A7F\\\"\",\r\n  \"name\": \"{{prefix}}-index\",\r\n  \"defaultScoringProfile\": null,\r\n  \"fields\": [\r\n    {\r\n      \"name\": \"id\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": false,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"durationInSeconds\",\r\n      \"type\": \"Edm.Double\",\r\n      \"searchable\": false,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": true,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"video_indexer_url\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": false,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"language\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": false,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"merged_content\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": true,\r\n      \"filterable\": false,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"transcript\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": false,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"ocr\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"keywords\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"topics\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"faces\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"labels\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"brands\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"namedLocations\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"namedPeople\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": false,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"sentiments\",\r\n      \"type\": \"Edm.Double\",\r\n      \"searchable\": false,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"content\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": true,\r\n      \"filterable\": false,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"summary\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": true,\r\n      \"filterable\": false,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"keyPhrases\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"organizations\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"persons\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"locations\",\r\n      \"type\": \"Collection(Edm.String)\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"category\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"UN_SDG\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": true,\r\n      \"filterable\": true,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": true,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"metadata_storage_path\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": true,\r\n      \"filterable\": false,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": true,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    },\r\n    {\r\n      \"name\": \"metadata_storage_name\",\r\n      \"type\": \"Edm.String\",\r\n      \"searchable\": true,\r\n      \"filterable\": false,\r\n      \"retrievable\": true,\r\n      \"sortable\": false,\r\n      \"facetable\": false,\r\n      \"key\": false,\r\n      \"indexAnalyzer\": null,\r\n      \"searchAnalyzer\": null,\r\n      \"analyzer\": null,\r\n      \"synonymMaps\": []\r\n    }\r\n  ],\r\n  \"scoringProfiles\": [],\r\n  \"corsOptions\": null,\r\n  \"suggesters\": [{\r\n      \"name\": \"sg\",\r\n      \"searchMode\": \"analyzingInfixMatching\",\r\n      \"sourceFields\": [\"content\"]\r\n    }],\r\n  \"analyzers\": [],\r\n  \"tokenizers\": [],\r\n  \"tokenFilters\": [],\r\n  \"charFilters\": [],\r\n  \"encryptionKey\": null,\r\n  \"similarity\": {\r\n    \"@odata.type\": \"#Microsoft.Azure.Search.BM25Similarity\",\r\n    \"k1\": null,\r\n    \"b\": null\r\n  },\r\n  \"semantic\": {\r\n    \"configurations\": [\r\n      {\r\n        \"name\": \"semantic\",\r\n        \"prioritizedFields\": {\r\n          \"titleField\": {\r\n            \"fieldName\": \"metadata_storage_name\"\r\n          },\r\n          \"prioritizedContentFields\": [\r\n            {\r\n              \"fieldName\": \"content\"\r\n            }\r\n          ],\r\n          \"prioritizedKeywordsFields\": [\r\n            {\r\n              \"fieldName\": \"UN_SDG\"\r\n            },\r\n            {\r\n              \"fieldName\": \"keyPhrases\"\r\n            }\r\n          ]\r\n        }\r\n      }\r\n    ]\r\n  }\r\n}"
+				},
+				"url": {
+					"raw": "https://{{search_service}}.search.windows.net/indexes/{{prefix}}-index?api-version=2021-04-30-Preview",
+					"protocol": "https",
+					"host": [
+						"{{search_service}}",
+						"search",
+						"windows",
+						"net"
+					],
+					"path": [
+						"indexes",
+						"{{prefix}}-index"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2021-04-30-Preview"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "03 - Create a skillset",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{env_search_api_key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"{{prefix}}-skillset\",\r\n  \"description\": \"Extract entities, detect language and extract key-phrases\",\r\n  \"skills\": [\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Vision.OcrSkill\",\r\n      \"name\": \"#1\",\r\n      \"description\": null,\r\n      \"context\": \"/document/normalized_images/*\",\r\n      \"textExtractionAlgorithm\": null,\r\n      \"lineEnding\": \"Space\",\r\n      \"defaultLanguageCode\": \"en\",\r\n      \"detectOrientation\": true,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"image\",\r\n          \"source\": \"/document/normalized_images/*\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"targetName\": \"text\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Text.MergeSkill\",\r\n      \"name\": \"#2\",\r\n      \"description\": \"Create merged_text, which includes all the textual representation of each image inserted at the right location in the content field.\",\r\n      \"context\": \"/document\",\r\n      \"insertPreTag\": \" \",\r\n      \"insertPostTag\": \" \",\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/content\"\r\n        },\r\n        {\r\n          \"name\": \"itemsToInsert\",\r\n          \"source\": \"/document/normalized_images/*/text\"\r\n        },\r\n        {\r\n          \"name\": \"offsets\",\r\n          \"source\": \"/document/normalized_images/*/contentOffset\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"mergedText\",\r\n          \"targetName\": \"merged_text\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Text.SplitSkill\",\r\n      \"name\": \"#3\",\r\n      \"description\": null,\r\n      \"context\": \"/document\",\r\n      \"defaultLanguageCode\": \"en\",\r\n      \"textSplitMode\": \"pages\",\r\n      \"maximumPageLength\": 4000,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/merged_text\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"textItems\",\r\n          \"targetName\": \"pages\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Text.KeyPhraseExtractionSkill\",\r\n      \"name\": \"#4\",\r\n      \"description\": null,\r\n      \"context\": \"/document/pages/*\",\r\n      \"defaultLanguageCode\": \"en\",\r\n      \"maxKeyPhraseCount\": null,\r\n      \"modelVersion\": null,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/pages/*\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"keyPhrases\",\r\n          \"targetName\": \"keyPhrases\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Text.EntityRecognitionSkill\",\r\n      \"name\": \"#5\",\r\n      \"description\": null,\r\n      \"context\": \"/document\",\r\n      \"categories\": [\r\n        \"Organization\"\r\n      ],\r\n      \"defaultLanguageCode\": \"en\",\r\n      \"minimumPrecision\": null,\r\n      \"includeTypelessEntities\": null,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/merged_text\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"organizations\",\r\n          \"targetName\": \"organizations\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Text.EntityRecognitionSkill\",\r\n      \"name\": \"#6\",\r\n      \"description\": null,\r\n      \"context\": \"/document\",\r\n      \"categories\": [\r\n        \"Location\"\r\n      ],\r\n      \"defaultLanguageCode\": \"en\",\r\n      \"minimumPrecision\": null,\r\n      \"includeTypelessEntities\": null,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/merged_text\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"locations\",\r\n          \"targetName\": \"locations\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Custom.WebApiSkill\",\r\n      \"name\": \"#10\",\r\n      \"description\": \"Text categorization using - Azure Functions and OpenAI GPT-3\",\r\n      \"context\": \"/document\",\r\n      \"uri\": \"https://wpbopenai.azurewebsites.net/api/OpenAIHTTPTrigger?code={{wpbopenai_code}}\",\r\n      \"httpMethod\": \"POST\",\r\n      \"timeout\": \"PT30S\",\r\n      \"batchSize\": 1000,\r\n      \"degreeOfParallelism\": 1,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/merged_text\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"category\",\r\n          \"targetName\": \"category\"\r\n        }\r\n      ],\r\n      \"httpHeaders\": {}\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Text.EntityRecognitionSkill\",\r\n      \"name\": \"#8\",\r\n      \"description\": null,\r\n      \"context\": \"/document\",\r\n      \"categories\": [\r\n        \"Person\"\r\n      ],\r\n      \"defaultLanguageCode\": \"en\",\r\n      \"minimumPrecision\": null,\r\n      \"includeTypelessEntities\": null,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/merged_text\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"persons\",\r\n          \"targetName\": \"persons\"\r\n        }\r\n      ]\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Custom.WebApiSkill\",\r\n      \"name\": \"#11\",\r\n      \"description\": \"SDG Similarity Check - UN Sustainability Development Goals\",\r\n      \"context\": \"/document\",\r\n      \"uri\": \"https://wpbsdgsimilarity.azurewebsites.net/api/SDGSimilarity?code={{wpbsdgsimilarity_code}}\",\r\n      \"httpMethod\": \"POST\",\r\n      \"timeout\": \"PT30S\",\r\n      \"batchSize\": 1000,\r\n      \"degreeOfParallelism\": 1,\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"text\",\r\n          \"source\": \"/document/merged_text\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"category\",\r\n          \"targetName\": \"category\"\r\n        }\r\n      ],\r\n      \"httpHeaders\": {}\r\n    },\r\n    {\r\n      \"@odata.type\": \"#Microsoft.Skills.Util.ShaperSkill\",\r\n      \"name\": \"#9\",\r\n      \"description\": \"Prepare projection fields\",\r\n      \"context\": \"/document\",\r\n      \"inputs\": [\r\n        {\r\n          \"name\": \"content\",\r\n          \"source\": \"/document/content\"\r\n        },\r\n        {\r\n          \"name\": \"keyPhrases\",\r\n          \"source\": \"/document/keyPhrases/*\"\r\n        },\r\n        {\r\n          \"name\": \"organizations\",\r\n          \"source\": \"/document/organizations/*\"\r\n        },\r\n        {\r\n          \"name\": \"persons\",\r\n          \"source\": \"/document/persons/*\"\r\n        },\r\n        {\r\n          \"name\": \"category\",\r\n          \"source\": \"/document/category\"\r\n        },\r\n        {\r\n          \"name\": \"locations\",\r\n          \"source\": \"/document/locations/*\"\r\n        }\r\n      ],\r\n      \"outputs\": [\r\n        {\r\n          \"name\": \"output\",\r\n          \"targetName\": \"knowledge_projection\"\r\n        }\r\n      ]\r\n    }\r\n  ],\r\n  \"cognitiveServices\": {\r\n    \"@odata.type\": \"#Microsoft.Azure.Search.CognitiveServicesByKey\",\r\n    \"description\": \"/subscriptions/{{subscription_id}}/resourceGroups/fihsbcrg/providers/Microsoft.CognitiveServices/accounts/fihsbc-cognitive-services\",\r\n    \"key\": \"{{cog_services_key}}\"\r\n  },\r\n  \"knowledgeStore\": {\r\n    \"storageConnectionString\": \"{{env_storage_connection_string}}\",\r\n    \"projections\": [\r\n      {\r\n        \"tables\": [\r\n          {\r\n            \"tableName\": \"DocumentInsights\",\r\n            \"referenceKeyName\": null,\r\n            \"generatedKeyName\": \"document_id\",\r\n            \"source\": \"/document/knowledge_projection\",\r\n            \"sourceContext\": null,\r\n            \"inputs\": []\r\n          }\r\n        ],\r\n        \"objects\": [],\r\n        \"files\": []\r\n      }\r\n    ],\r\n    \"parameters\": {\r\n      \"synthesizeGeneratedKeyName\": true\r\n    }\r\n  }\r\n}"
+				},
+				"url": {
+					"raw": "https://{{search_service}}.search.windows.net/skillsets/{{prefix}}-skillset?api-version=2020-06-30",
+					"protocol": "https",
+					"host": [
+						"{{search_service}}",
+						"search",
+						"windows",
+						"net"
+					],
+					"path": [
+						"skillsets",
+						"{{prefix}}-skillset"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2020-06-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "04 - Create Indexer",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{env_search_api_key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"dataSourceName\" : \"{{prefix}}-datasource\",\r\n  \"targetIndexName\" : \"{{prefix}}-index\",\r\n  \"skillsetName\" : \"{{prefix}}-skillset\",\r\n  \"fieldMappings\" : [\r\n        {\r\n          \"sourceFieldName\" : \"metadata_storage_path\",\r\n          \"targetFieldName\" : \"metadata_storage_path\",\r\n          \"mappingFunction\" : { \"name\" : \"base64Encode\" }\r\n        },\r\n        {\r\n        \t\"sourceFieldName\": \"metadata_storage_name\",\r\n        \t\"targetFieldName\": \"metadata_storage_name\"\r\n        }\r\n   ],\r\n  \"outputFieldMappings\" : \r\n\t[\r\n\t\t{\r\n        \t\"sourceFieldName\": \"/document/merged_text\",\r\n        \t\"targetFieldName\": \"content\"\r\n        },\r\n  \t\t{\r\n          \"sourceFieldName\" : \"/document/organizations\", \r\n          \"targetFieldName\" : \"organizations\"\r\n        },\r\n  \t\t{\r\n          \"sourceFieldName\" : \"/document/persons\", \r\n          \"targetFieldName\" : \"persons\"\r\n        },\r\n        {\r\n          \"sourceFieldName\" : \"/document/category\", \r\n          \"targetFieldName\" : \"category\"\r\n        },\r\n        {\r\n          \"sourceFieldName\" : \"/document/UN_SDG\", \r\n          \"targetFieldName\" : \"UN_SDG\"\r\n        },\r\n  \t\t{\r\n          \"sourceFieldName\" : \"/document/locations\", \r\n          \"targetFieldName\" : \"locations\"\r\n        },\r\n        {\r\n          \"sourceFieldName\" : \"/document/pages/*/keyPhrases/*\", \r\n          \"targetFieldName\" : \"keyPhrases\"\r\n        }\r\n    ],\r\n  \"parameters\":\r\n  {\r\n\t\"batchSize\": 1,\r\n  \t\"maxFailedItems\":-1,\r\n  \t\"maxFailedItemsPerBatch\":-1,\r\n  \t\"configuration\": \r\n\t{\r\n    \t\"dataToExtract\": \"contentAndMetadata\",\r\n    \t\"imageAction\": \"generateNormalizedImages\"\r\n\t}\r\n  }\r\n}"
+				},
+				"url": {
+					"raw": "https://{{search_service}}.search.windows.net/indexers/{{prefix}}-indexer?api-version=2020-06-30",
+					"protocol": "https",
+					"host": [
+						"{{search_service}}",
+						"search",
+						"windows",
+						"net"
+					],
+					"path": [
+						"indexers",
+						"{{prefix}}-indexer"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2020-06-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "05 - Check Indexer Status",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{env_search_api_key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://{{search_service}}.search.windows.net/indexers/{{prefix}}-indexer/status?api-version=2020-06-30",
+					"protocol": "https",
+					"host": [
+						"{{search_service}}",
+						"search",
+						"windows",
+						"net"
+					],
+					"path": [
+						"indexers",
+						"{{prefix}}-indexer",
+						"status"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2020-06-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "06 - Search the Index",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{env_search_api_key}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://{{search_service}}.search.windows.net/indexes/{{prefix}}-index/docs?search=*&api-version=2020-06-30",
+					"protocol": "https",
+					"host": [
+						"{{search_service}}",
+						"search",
+						"windows",
+						"net"
+					],
+					"path": [
+						"indexes",
+						"{{prefix}}-index",
+						"docs"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "*"
+						},
+						{
+							"key": "api-version",
+							"value": "2020-06-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "07 - Test Local Web API Skill",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"values\": [\r\n        {\r\n        \t\"recordId\": \"1\",\r\n        \t\"data\":\r\n\t        {\r\n\t        \t\"value\": \"<your-value>\"\r\n           }\r\n        }\r\n   ]\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:7071/api/ExampleSkill",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"ExampleSkill"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "08 - Run Indexer",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "api-key",
+						"value": "{{env_search_api_key}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{search_service}}.search.windows.net/indexers/{{index_name}}-indexer/run?api-version=2019-05-06",
+					"protocol": "https",
+					"host": [
+						"{{search_service}}",
+						"search",
+						"windows",
+						"net"
+					],
+					"path": [
+						"indexers",
+						"{{index_name}}-indexer",
+						"run"
+					],
+					"query": [
+						{
+							"key": "api-version",
+							"value": "2019-05-06"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Open AI Function Locally",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"values\": [\r\n        {\r\n        \t\"recordId\": \"1\",\r\n        \t\"data\":\r\n\t        {\r\n\t        \t\"text\": \"51 of 57  -  ANZ is one of the largest banking and financial services groups in Australia and New Zealand. It has a strong focus on institutional banking solutions in the areas of transaction banking and loans, as well as specialised financial services. In November 2016, ANZ launched an innovation lab in Singapore to help accelerate innovation in Institutional Banking capability and facilitate collaboration with the financial technology ecosystem. The facility, ANZ BlueSpace, provides an open lab environment aiming to encourage design thinking and reduce the innovation cycle through the incubation and rapid prototyping of ideas. 52 of 57  -  ANZ offers institutional banking services including cash management, transaction banking, foreign exchange, trade and specialised financial services. In 2017, institutional banking accounted for 24% of ANZ's interest income. The bank focuses on sectors such as natural resources, agriculture, infrastructure and financial institutions that are directly linked to ASEAN's growth. ANZ is looking to improve capital efficiency by reducing risk weighted assets in its institutional banking business. The bank's Corporate Sustainability Framework supports its business strategy and is aligned with the bank's purpose. The three key areas of focus are sustainable growth, socio-economic participation and responsible banking. ANZ's financial wellbeing program helps low-income people to build savings. The bank is also committed to the United Nations sustainable development goals and has set targets to achieve these goals. In 2017, ANZ achieved 83% of its set goals. ANZ primarily supports corporate clients dependent on regional trade and capital flows between its home markets and ASEAN. The focus is to increase scale in cash management, trade and global markets solutions. The bank has won several awards including 'Best Bank for Overall FX Service in Vietnam' (2016 Asiamoney Awards) and 'Top 4 Corporate Bank in Asia' (2018 Greenwich Awards).\"\r\n           }\r\n        }\r\n   ]\r\n}\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7071/api/OpenAIHTTPTrigger",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7071",
+					"path": [
+						"api",
+						"OpenAIHTTPTrigger"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test SDG Similarity",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"values\": [\r\n        {\r\n        \t\"recordId\": \"1\",\r\n        \t\"data\":\r\n\t        {\r\n\t        \t\"text\": \"I am here talking about ending poverty which has brought this society at the precipice of collapse. To alleviate this I have introduced new povery counter-measures which will target the pooerst villages first and then move into the metropolitan areas in most need. People that do not have jobs and cannot suport their families will be aided first as a matter of urgency. Through these efforts we plan to reduce poverty in the country by 15% by the end of next year.\"\r\n           }\r\n        }\r\n   ]\r\n}"
+				},
+				"url": {
+					"raw": "https://wpbsdgsimilarity.azurewebsites.net/api/SDGSimilarity?code=",
+					"protocol": "https",
+					"host": [
+						"wpbsdgsimilarity",
+						"azurewebsites",
+						"net"
+					],
+					"path": [
+						"api",
+						"SDGSimilarity"
+					],
+					"query": [
+						{
+							"key": "code",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "search_service",
+			"value": "cogsearchdemosearch",
+			"type": "string"
+		},
+		{
+			"key": "index_name",
+			"value": "cogsearchdemo",
+			"type": "string"
+		}
+	]
+}
