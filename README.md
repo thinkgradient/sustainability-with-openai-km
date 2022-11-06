@@ -35,7 +35,7 @@ Knowledge Mining Solution Accelerator - Code Samples | Microsoft Docs
 	15. Grant web app managed identity access to the container registry:
 		a. az role assignment create --assignee  AXXXXXXX-XXXXXXX-XXXXX-XXXXXXX --scope /subscriptions/57fdad63-651c-4942-a0c1-83c7b430cf43/resourceGroups/wpbrg/providers/Microsoft.ContainerRegistry/registries/wpbregistry --role "AcrPull"
 	16. Configure app to pull from Azure Container Registry
-		a. az resource update --ids /subscriptions/57fdad63-651c-4942-a0c1-83c7b430cf43/resourceGroups/wpbrg/providers/Microsoft.Web/sites/wpb-site-container/config/web --set properties.acrUseManagedIdentityCreds=True
+		a. az resource update --ids /subscriptions/XXXXXX-xXXXXX-XXXXX-XXXXXX3/resourceGroups/wpbrg/providers/Microsoft.Web/sites/wpb-site-container/config/web --set properties.acrUseManagedIdentityCreds=True
 	17. az webapp log tail --name wpb-km-web-ui --resource-group wpbrg
 	18. Enable automatic push to App Service from Container Registry
 		a. Go to wpb-site-container App Service
