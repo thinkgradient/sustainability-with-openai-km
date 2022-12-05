@@ -22,7 +22,7 @@
           "openai"
           ]
     },
-    "location":{
+    "appInsightsLocation":{
       "value": "westeurope"
     },
     "runtime":{
