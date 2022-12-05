@@ -3,6 +3,6 @@
   "Values": {
     "AzureWebJobsStorage": "",
     "FUNCTIONS_WORKER_RUNTIME": "python",
-    "fihsbcstr_STORAGE": ""
+    "airliftstr_STORAGE": "DefaultEndpointsProtocol=https;AccountName=airliftstr;AccountKey=G6pHhbrCpk53RXXFDbJ/6sop9FUBzTCs7r6XgoqBzipb3T4BMV5O5BuVReURT5HQNpmUUWLHymDl+AStsPDkPQ==;EndpointSuffix=core.windows.net"
   }
 }

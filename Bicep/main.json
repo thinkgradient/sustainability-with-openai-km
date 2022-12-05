@@ -1,0 +1,737 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.12.40.16777",
+      "templateHash": "17832403408790168394"
+    }
+  },
+  "parameters": {
+    "global_prefix": {
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 2,
+      "metadata": {
+        "description": "Service name must only contain lowercase letters, digits or dashes, cannot use dash as the first two or last one characters, cannot contain consecutive dashes, and is limited between 2 and 60 characters in length."
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "search_name": {
+      "type": "string",
+      "defaultValue": "[format('{0}-{1}', parameters('global_prefix'), parameters('name'))]"
+    },
+    "sku": {
+      "type": "string",
+      "defaultValue": "standard",
+      "metadata": {
+        "description": "The pricing tier of the search service you want to create (for example, basic or standard)."
+      },
+      "allowedValues": [
+        "free",
+        "basic",
+        "standard",
+        "standard2",
+        "standard3",
+        "storage_optimized_l1",
+        "storage_optimized_l2"
+      ]
+    },
+    "replicaCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "maxValue": 12,
+      "minValue": 1,
+      "metadata": {
+        "description": "Replicas distribute search workloads across the service. You need at least two replicas to support high availability of query workloads (not applicable to the free tier)."
+      }
+    },
+    "partitionCount": {
+      "type": "int",
+      "defaultValue": 1,
+      "allowedValues": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        12
+      ],
+      "metadata": {
+        "description": "Partitions allow for scaling of document count as well as faster indexing by sharding your index over multiple search units."
+      }
+    },
+    "hostingMode": {
+      "type": "string",
+      "defaultValue": "default",
+      "allowedValues": [
+        "default",
+        "highDensity"
+      ],
+      "metadata": {
+        "description": "Applicable only for SKUs set to standard3. You can set this property to enable a single, high density partition that allows up to 1000 indexes, which is much higher than the maximum indexes allowed for any other SKU."
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "rgLocation": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]"
+    },
+    "storageName": {
+      "type": "string"
+    },
+    "containerName": {
+      "type": "string"
+    },
+    "kvName": {
+      "type": "string"
+    },
+    "appName": {
+      "type": "array"
+    },
+    "appInsightsLocation": {
+      "type": "string"
+    },
+    "runtime": {
+      "type": "string"
+    },
+    "webAppName": {
+      "type": "string"
+    },
+    "uniquestring": {
+      "type": "string",
+      "defaultValue": "[format('{0}', uniqueString(resourceGroup().id))]"
+    },
+    "acrSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "Provide a tier of your Azure Container Registry."
+      }
+    },
+    "cogserviceName": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "acrName": "[format('airliftacr{0}', substring(parameters('uniquestring'), 0, 2))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Search/searchServices",
+      "apiVersion": "2020-08-01",
+      "name": "[parameters('search_name')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('sku')]"
+      },
+      "properties": {
+        "replicaCount": "[parameters('replicaCount')]",
+        "partitionCount": "[parameters('partitionCount')]",
+        "hostingMode": "[parameters('hostingMode')]"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}{1}', parameters('global_prefix'), parameters('storageName'))]",
+      "location": "[parameters('rgLocation')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2"
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2019-06-01",
+      "name": "[format('{0}/default/{1}', format('{0}{1}', parameters('global_prefix'), parameters('storageName')), parameters('containerName'))]",
+      "properties": {
+        "publicAccess": "None",
+        "metadata": {}
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', format('{0}{1}', parameters('global_prefix'), parameters('storageName')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.ContainerRegistry/registries",
+      "apiVersion": "2021-06-01-preview",
+      "name": "[variables('acrName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "[parameters('acrSku')]"
+      },
+      "properties": {
+        "adminUserEnabled": true
+      }
+    },
+    {
+      "copy": {
+        "name": "deployAIFunctions",
+        "count": "[length(parameters('appName'))]"
+      },
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('DeployFunction-{0}', parameters('appName')[copyIndex()])]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "appName": {
+            "value": "[format('{0}-{1}', parameters('global_prefix'), parameters('appName')[copyIndex()])]"
+          },
+          "appInsightsLocation": {
+            "value": "[parameters('appInsightsLocation')]"
+          },
+          "runtime": {
+            "value": "[parameters('runtime')]"
+          },
+          "global_prefix": {
+            "value": "[parameters('global_prefix')]"
+          },
+          "storageName": {
+            "value": "[parameters('storageName')]"
+          },
+          "container_sas_url": {
+            "reference": {
+              "keyVault": {
+                "id": "[resourceId('Microsoft.KeyVault/vaults', parameters('kvName'))]"
+              },
+              "secretName": "container-sas-url"
+            }
+          },
+          "openai_api_key": {
+            "reference": {
+              "keyVault": {
+                "id": "[resourceId('Microsoft.KeyVault/vaults', parameters('kvName'))]"
+              },
+              "secretName": "openai-api-key"
+            }
+          },
+          "openai_api_type": {
+            "reference": {
+              "keyVault": {
+                "id": "[resourceId('Microsoft.KeyVault/vaults', parameters('kvName'))]"
+              },
+              "secretName": "openai-api-type"
+            }
+          },
+          "openai_api_base": {
+            "reference": {
+              "keyVault": {
+                "id": "[resourceId('Microsoft.KeyVault/vaults', parameters('kvName'))]"
+              },
+              "secretName": "openai-api-base"
+            }
+          },
+          "openai_api_version": {
+            "reference": {
+              "keyVault": {
+                "id": "[resourceId('Microsoft.KeyVault/vaults', parameters('kvName'))]"
+              },
+              "secretName": "openai-api-version"
+            }
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.12.40.16777",
+              "templateHash": "10610217196969330056"
+            }
+          },
+          "parameters": {
+            "appName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the function app that you wish to create."
+              }
+            },
+            "global_prefix": {
+              "type": "string"
+            },
+            "storageAccountType": {
+              "type": "string",
+              "defaultValue": "Standard_LRS",
+              "allowedValues": [
+                "Standard_LRS",
+                "Standard_GRS",
+                "Standard_RAGRS"
+              ],
+              "metadata": {
+                "description": "Storage Account type"
+              }
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            },
+            "appInsightsLocation": {
+              "type": "string",
+              "metadata": {
+                "description": "Location for Application Insights"
+              }
+            },
+            "runtime": {
+              "type": "string",
+              "allowedValues": [
+                "node",
+                "dotnet",
+                "java",
+                "python"
+              ],
+              "metadata": {
+                "description": "The language worker runtime to load in the function app."
+              }
+            },
+            "storageName": {
+              "type": "string"
+            },
+            "container_sas_url": {
+              "type": "secureString"
+            },
+            "openai_api_key": {
+              "type": "secureString"
+            },
+            "openai_api_type": {
+              "type": "secureString"
+            },
+            "openai_api_base": {
+              "type": "secureString"
+            },
+            "openai_api_version": {
+              "type": "secureString"
+            }
+          },
+          "variables": {
+            "functionAppName": "[parameters('appName')]",
+            "hostingPlanName": "[parameters('appName')]",
+            "applicationInsightsName": "[parameters('appName')]",
+            "storageAccountName": "[format('{0}{1}', parameters('global_prefix'), parameters('storageName'))]",
+            "functionWorkerRuntime": "[parameters('runtime')]",
+            "uniquestring": "[uniqueString(resourceGroup().id)]",
+            "uniquesuffix": "[substring(variables('uniquestring'), 0, 2)]",
+            "sdgsimilarity_unique": "[uniqueString(resourceGroup().id)]",
+            "sdgsimilarity_suffix": "[substring(variables('sdgsimilarity_unique'), 0, 2)]",
+            "openai_unique": "[uniqueString(resourceGroup().id)]",
+            "openai_suffix": "[substring(variables('openai_unique'), 0, 2)]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2021-03-01",
+              "name": "[variables('hostingPlanName')]",
+              "location": "[parameters('location')]",
+              "kind": "linux",
+              "sku": {
+                "name": "S1"
+              },
+              "properties": {
+                "reserved": true
+              }
+            },
+            {
+              "condition": "[equals(parameters('appName'), format('{0}-pdfsplitter', parameters('global_prefix')))]",
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2021-03-01",
+              "name": "[format('{0}-f1-{1}', parameters('appName'), variables('uniquesuffix'))]",
+              "location": "[parameters('location')]",
+              "kind": "functionapp,linux",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                  "appSettings": [
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTSHARE",
+                      "value": "[toLower(parameters('appName'))]"
+                    },
+                    {
+                      "name": "FUNCTIONS_EXTENSION_VERSION",
+                      "value": "~4"
+                    },
+                    {
+                      "name": "target_folder",
+                      "value": "processed"
+                    },
+                    {
+                      "name": "sas_url",
+                      "value": "[parameters('container_sas_url')]"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
+                    },
+                    {
+                      "name": "FUNCTIONS_WORKER_RUNTIME",
+                      "value": "[variables('functionWorkerRuntime')]"
+                    }
+                  ],
+                  "ftpsState": "FtpsOnly",
+                  "minTlsVersion": "1.2",
+                  "linuxFxVersion": "Python|3.9"
+                },
+                "httpsOnly": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+              ]
+            },
+            {
+              "condition": "[equals(parameters('appName'), format('{0}-sdgsimilarity', parameters('global_prefix')))]",
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2021-03-01",
+              "name": "[format('{0}-f2-{1}', parameters('appName'), variables('uniquesuffix'))]",
+              "location": "[parameters('location')]",
+              "kind": "functionapp,linux",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                  "appSettings": [
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTSHARE",
+                      "value": "[toLower(parameters('appName'))]"
+                    },
+                    {
+                      "name": "FUNCTIONS_EXTENSION_VERSION",
+                      "value": "~4"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
+                    },
+                    {
+                      "name": "FUNCTIONS_WORKER_RUNTIME",
+                      "value": "[variables('functionWorkerRuntime')]"
+                    }
+                  ],
+                  "ftpsState": "FtpsOnly",
+                  "minTlsVersion": "1.2",
+                  "linuxFxVersion": "Python|3.9"
+                },
+                "httpsOnly": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+              ]
+            },
+            {
+              "condition": "[equals(parameters('appName'), format('{0}-openai', parameters('global_prefix')))]",
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2021-03-01",
+              "name": "[format('{0}-f3-{1}', parameters('appName'), variables('uniquesuffix'))]",
+              "location": "[parameters('location')]",
+              "kind": "functionapp,linux",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                  "appSettings": [
+                    {
+                      "name": "AzureWebJobsStorage",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                      "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2019-06-01').keys[0].value)]"
+                    },
+                    {
+                      "name": "WEBSITE_CONTENTSHARE",
+                      "value": "[toLower(parameters('appName'))]"
+                    },
+                    {
+                      "name": "FUNCTIONS_EXTENSION_VERSION",
+                      "value": "~4"
+                    },
+                    {
+                      "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                      "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').InstrumentationKey]"
+                    },
+                    {
+                      "name": "openaiapikey",
+                      "value": "[parameters('openai_api_key')]"
+                    },
+                    {
+                      "name": "openaiapitype",
+                      "value": "[parameters('openai_api_type')]"
+                    },
+                    {
+                      "name": "openaiapibase",
+                      "value": "[parameters('openai_api_base')]"
+                    },
+                    {
+                      "name": "openaiapiversion",
+                      "value": "[parameters('openai_api_version')]"
+                    },
+                    {
+                      "name": "FUNCTIONS_WORKER_RUNTIME",
+                      "value": "[variables('functionWorkerRuntime')]"
+                    }
+                  ],
+                  "ftpsState": "FtpsOnly",
+                  "minTlsVersion": "1.2",
+                  "linuxFxVersion": "Python|3.9"
+                },
+                "httpsOnly": true
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[variables('applicationInsightsName')]",
+              "location": "[parameters('appInsightsLocation')]",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "Request_Source": "rest"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('DeployAppService-{0}', parameters('webAppName'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "acrName": {
+            "value": "[variables('acrName')]"
+          },
+          "global_prefix": {
+            "value": "[parameters('global_prefix')]"
+          },
+          "appName": {
+            "value": "[parameters('webAppName')]"
+          },
+          "storageName": {
+            "value": "[parameters('storageName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.12.40.16777",
+              "templateHash": "11839805387192306449"
+            }
+          },
+          "parameters": {
+            "appName": {
+              "type": "string",
+              "metadata": {
+                "description": "The name of the app service that you wish to create."
+              }
+            },
+            "global_prefix": {
+              "type": "string"
+            },
+            "acrName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            },
+            "storageName": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "webappName": "[parameters('appName')]",
+            "hostingPlanName": "[parameters('appName')]",
+            "applicationInsightsName": "[parameters('appName')]",
+            "storageAccountName": "[format('{0}{1}', parameters('global_prefix'), parameters('storageName'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2020-06-01",
+              "name": "[variables('hostingPlanName')]",
+              "location": "[resourceGroup().location]",
+              "sku": {
+                "name": "B1",
+                "capacity": 1
+              },
+              "kind": "linux",
+              "properties": {
+                "reserved": true
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2020-06-01",
+              "name": "[variables('webappName')]",
+              "location": "[resourceGroup().location]",
+              "kind": "app,linux,container",
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "httpsOnly": true,
+                "siteConfig": {
+                  "alwaysOn": true,
+                  "minTlsVersion": "1.2",
+                  "appSettings": [
+                    {
+                      "name": "WEBSITES_ENABLE_APP_SERVICE_STORAGE",
+                      "value": "false"
+                    },
+                    {
+                      "name": "DOCKER_REGISTRY_SERVER_PASSWORD",
+                      "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), '2020-11-01-preview').passwords[0].value]"
+                    },
+                    {
+                      "name": "DOCKER_REGISTRY_SERVER_URL",
+                      "value": "[format('{0}.azurecr.io', parameters('acrName'))]"
+                    },
+                    {
+                      "name": "DOCKER_REGISTRY_SERVER_USERNAME",
+                      "value": "[format('{0}', parameters('acrName'))]"
+                    }
+                  ]
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('deployCognitiveService-{0}', parameters('cogserviceName'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "global_prefix": {
+            "value": "[parameters('global_prefix')]"
+          },
+          "serviceName": {
+            "value": "[parameters('cogserviceName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.12.40.16777",
+              "templateHash": "15395690542588937202"
+            }
+          },
+          "parameters": {
+            "global_prefix": {
+              "type": "string",
+              "metadata": {
+                "description": "That name is the name of our application. It has to be unique.Type a name followed by your resource group name. (<name>-<resourceGroupName>)"
+              }
+            },
+            "serviceName": {
+              "type": "string"
+            },
+            "cognitiveServiceName": {
+              "type": "string",
+              "defaultValue": "[format('{0}-{1}', parameters('global_prefix'), parameters('serviceName'))]"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]",
+              "metadata": {
+                "description": "Location for all resources."
+              }
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "S0",
+              "allowedValues": [
+                "S0"
+              ]
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.CognitiveServices/accounts",
+              "apiVersion": "2021-10-01",
+              "name": "[parameters('cognitiveServiceName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('sku')]"
+              },
+              "kind": "CognitiveServices",
+              "properties": {
+                "apiProperties": {
+                  "statisticsEnabled": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

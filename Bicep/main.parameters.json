@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "global_prefix":{
+      "value": "airlift"
+    },
+    "name": {
+      "value": "searchserv"
+    },
+    "storageName":{
+      "value": "datastore"
+    },
+    "containerName":{
+      "value": "documents"
+    },
+    "appName": {
+      "value":
+          [
+          "pdfsplitter",
+          "sdgsimilarity",
+          "openai"
+          ]
+    },
+    "appInsightsLocation":{
+      "value": "westeurope"
+    },
+    "runtime":{
+      "value": "python"
+    },
+    "kvName":{
+      "value":"airlift-keyvault"
+    },
+    "webAppName":{
+      "value": "web-site-container"
+    },
+    "cogserviceName":{
+      "value": "cogservice"
+    }
+  }
+}
