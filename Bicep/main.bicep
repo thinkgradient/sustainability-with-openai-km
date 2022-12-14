@@ -3,8 +3,24 @@
 @maxLength(60)
 param global_prefix string
 param name string
+param kvName string
 
-param search_name string = '${global_prefix}-${name}'
+
+/*
+  Reference existing Key Vault
+*/
+
+resource kv 'Microsoft.KeyVault/vaults@2021-11-01-preview' existing = {
+  name: kvName
+}
+
+
+/*
+  Create Azure Search Service
+*/
+
+param search_name string = '${global_prefix}-${name}-${substring(uniqueString(resourceGroup().id), 0,3)}'
+
 
 @allowed([
   'free'
@@ -57,66 +73,150 @@ resource search 'Microsoft.Search/searchServices@2020-08-01' = {
   }
 }
 
-/*
-  Storage Account 
-*/
 
-param rgLocation string = resourceGroup().location
-param storageName string
+
+/*
+  Create Azure Storage account and container
+*/
+param storageName string 
 param containerName string 
+param videoContainerName string 
+param videoContainerSource string 
 
-// Create storages
-resource storageAccount 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  name: '${global_prefix}${storageName}'
-  location: rgLocation
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-}
+param storageAccountName string = '${global_prefix}${storageName}${substring(uniqueString(resourceGroup().id), 0,3)}'
 
-// Create container
-resource containers 'Microsoft.Storage/storageAccounts/blobServices/containers@2019-06-01' =  {
-  name: '${storageAccount.name}/default/${containerName}'
-  properties: {
-    publicAccess: 'None'
-    metadata: {}
+module deployStorageAccount './modules/storage-account.bicep' = {
+  name: 'DeployStorageAccount-${storageAccountName}'
+  params: {
+    storageName: storageAccountName
+    global_prefix: global_prefix
+    containerName: containerName
+    videoContainerName: videoContainerName
+    videoContainerSource: videoContainerSource
   }
 }
+
 
 /*
-  Reference existing Key Vault
+  Create Azure KeyVault secrets
 */
 
-resource kv 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
-  name: kvName
+param container_url string = 'https://${storageAccountName}.blob.core.windows.net/${containerName}?'
+
+resource containerSasUrl 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'container-sas-url'
+  properties: {
+    value: '${container_url}${deployStorageAccount.outputs.myContainerUploadSAS}'
+  }
+}
+
+param openaiapikey string
+
+resource openaiApiKey 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'openai-api-key'
+  properties: {
+    value: '${openaiapikey}'
+  }
+}
+
+param openaiapitype string
+
+resource openaiApiType 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'openai-api-type'
+  properties: {
+    value: '${openaiapitype}'
+  }
+}
+
+param openaiapibase string
+
+resource openaiApiBase 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'openai-api-base'
+  properties: {
+    value: '${openaiapibase}'
+  }
+}
+
+param openaiapiversion string
+
+resource openaiApiVersion 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+  parent: kv
+  name: 'openai-api-version'
+  properties: {
+    value: '${openaiapiversion}'
+  }
+}
+
+/*
+  Deploy Video Indexer service
+*/
+
+param videoIndexName string 
+
+module deployVideoIndexer './modules/video-indexer.bicep' = {
+  name: 'deployVideoIndexer-${videoIndexName}'
+  params: {
+    global_prefix: global_prefix
+    videoAccountName: videoIndexName
+    location: location
+    userAssignedMangedIdentityName: '${videoIndexName}${substring(uniqueString(resourceGroup().id), 0,3)}id'
+    storageAccountId: '${deployStorageAccount.outputs.storageAccountId}'
+  }
 }
 
 
+
+
+
 /*
-  Create three Azure App Functions - PDFSplitter, SDGSimilarity, and OpenAI
+  Create five Azure App Functions - PDFSplitter, SDGSimilarity, OpenAIHTTPTrigger, Start Video Indexing, VideoCallBack
   Note: You still need to deploy the function code using VSCode or Azure CLI
 */
 
-param kvName string
 param appName array
 param appInsightsLocation string
 param runtime string
+
+param search_api_version string
+param search_index string
+
+
 
 
 module deployAIFunctions './modules/ai-functions.bicep' = [for funcname in appName: {
   name: 'DeployFunction-${funcname}'
   params: {
-    appName: '${global_prefix}-${funcname}'
+    appName: '${global_prefix}-${funcname}-${substring(uniqueString(resourceGroup().id), 0,3)}'
     appInsightsLocation: appInsightsLocation
     runtime: runtime
     global_prefix: global_prefix
-    storageName: storageName
-    container_sas_url: kv.getSecret('container-sas-url')
-    openai_api_key: kv.getSecret('openai-api-key')
-    openai_api_type: kv.getSecret('openai-api-type')
-    openai_api_base: kv.getSecret('openai-api-base')
-    openai_api_version: kv.getSecret('openai-api-version')
+    storageName: storageAccountName
+    videoContainerName: videoContainerName
+    videoContainerSource: videoContainerSource
+    container_sas_url: '${container_url}${deployStorageAccount.outputs.myContainerUploadSAS}'
+    blobAccountKey: '${deployStorageAccount.outputs.blobAccountKey}'
+
+    openai_api_key: openaiapikey
+    openai_api_type: openaiapitype
+    openai_api_base: openaiapibase
+    openai_api_version: openaiapiversion
+
+    search_name: search_name
+    search_api_key: '${listAdminKeys('${resourceId('Microsoft.Search/searchServices', '${search_name}')}', '2015-08-19').PrimaryKey}'
+    search_api_version: '${search_api_version}'
+    search_index: '${search_index}'
+
+    video_indexer_account_id: '${deployVideoIndexer.outputs.videoIndexAccountId}'
+    video_indexer_api_key: ''
+    video_indexer_endpoint: 'https://api.videoindexer.ai'
+    video_indexer_location: '${location}'
+    video_indexer_location_url_prefix: 'www'
+    video_indexer_resource_id: '${deployVideoIndexer.outputs.videoIndexerResourceId}'
+
   }
 }]
 
@@ -125,10 +225,10 @@ module deployAIFunctions './modules/ai-functions.bicep' = [for funcname in appNa
   Deploy Container Registry
 */
 
-param webAppName string
+
 
 param uniquestring string = '${uniqueString(resourceGroup().id)}'
-var acrName = 'airliftacr${substring(uniquestring, 0, 2)}'
+var acrName = '${global_prefix}acr${substring(uniqueString(resourceGroup().id), 0,3)}'
 
 @description('Provide a tier of your Azure Container Registry.')
 param acrSku string = 'Standard'
@@ -147,19 +247,88 @@ resource acrResource 'Microsoft.ContainerRegistry/registries@2021-06-01-preview'
 
 
 /*
-  Deploy App Service (Website) with Container Register deployment
+  Deploy App Service (Website) with Container Registry deployment
 */
 
+param webAppName string 
+
+param webAppNameService string = '${global_prefix}${webAppName}${substring(uniqueString(resourceGroup().id), 0,3)}'
+
 module deployAppService './modules/app-service-ui.bicep' = {
-  name: 'DeployAppService-${webAppName}'
+  name: 'DeployAppService-${webAppNameService}'
   params: {
     acrName: acrName
     global_prefix: global_prefix
-    appName: webAppName
-    storageName: storageName
+    appName: webAppNameService
+    storageName: storageAccountName
+  }
+  dependsOn: [
+    acrResource
+  ]
+}
+
+
+/*
+   Assign Acr Pull role to Web App on Container Registry
+*/
+
+param builtInRoleType string = 'Contributor'
+var webappid = '${deployAppService.outputs.appServiceManagedIdentity}'
+
+
+var roleDefinitionId = {
+  Owner: {
+    id: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
+  }
+  Contributor: {
+    id: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
+  }
+  Reader: {
+    id: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')
   }
 }
 
+resource assignAcrPulltoWebApp 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(resourceGroup().id, acrResource.name, 'AssignAcrPullToWebApp', '${substring(uniqueString(resourceGroup().id), 0,3)}')   
+  scope: acrResource
+  properties: {
+    description: 'Assign AcrPull role to Web App'
+    principalId: webappid
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: roleDefinitionId[builtInRoleType].id
+  }
+
+}
+
+/*
+  Create Container Registry WebHook that pushes image to Web App 
+*/
+
+// var appServieNameOutput = deployAppService.outputs.appserviceAppName
+
+// param apppublishingcreds string = '${appServieNameOutput}/publishingcredentials'
+ 
+
+
+resource publishingcreds 'Microsoft.Web/sites/config@2022-03-01' existing = {
+  name: '${webAppNameService}/publishingcredentials'
+}
+
+var creds = list(publishingcreds.id, publishingcreds.apiVersion).properties.scmUri
+
+resource hook 'Microsoft.ContainerRegistry/registries/webhooks@2020-11-01-preview' = {
+  parent: acrResource
+  location: location
+  name: 'webhook1' 
+  properties: {
+    serviceUri: '${creds}/docker/hook'
+    status: 'enabled'
+  
+    actions: [
+      'push'
+    ]
+  }
+}
 
 /*
   Deploy generic Cognitive Services service for Azure Search skillset
@@ -174,4 +343,6 @@ module deployCognitiveService './modules/cog-service.bicep' = {
     serviceName: cogserviceName
   }
 }
+
+
 

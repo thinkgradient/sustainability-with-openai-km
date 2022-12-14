@@ -25,11 +25,15 @@ param appInsightsLocation string
 ])
 param runtime string 
 param storageName string
+param blobAccountKey string
+param videoContainerName string
+param videoContainerSource string
+param search_name string
 
-var functionAppName = appName
-var hostingPlanName = appName
-var applicationInsightsName = appName
-var storageAccountName = '${global_prefix}${storageName}'
+
+var hostingPlanName = '${appName}'
+var applicationInsightsName = '${appName}'
+var storageAccountName = '${storageName}'
 var functionWorkerRuntime = runtime
 
 
@@ -69,8 +73,8 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
 var uniquestring = uniqueString(resourceGroup().id)
 var uniquesuffix = substring(uniquestring, 0, 2)
 
-resource functionAppPDFSplitter 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-pdfsplitter') {
-  name: '${appName}-f1-${uniquesuffix}'
+resource functionAppPDFSplitter 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-pdfsplitter-${substring(uniqueString(resourceGroup().id), 0,3)}') {
+  name: '${appName}-f1'
   location: location
   kind: 'functionapp,linux'
   identity: {
@@ -113,6 +117,10 @@ resource functionAppPDFSplitter 'Microsoft.Web/sites@2021-03-01' = if (appName =
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: functionWorkerRuntime
         }
+        {
+          name: 'wpbconnstr_STORAGE'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
       ]
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
@@ -126,8 +134,8 @@ var sdgsimilarity_unique = uniqueString(resourceGroup().id)
 var sdgsimilarity_suffix = substring(sdgsimilarity_unique, 0, 2)
 
 
-resource functionAppSDGSimilarity 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-sdgsimilarity') {
-  name: '${appName}-f2-${uniquesuffix}'
+resource functionAppSDGSimilarity 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-sdgsimilarity-${substring(uniqueString(resourceGroup().id), 0,3)}') {
+  name: '${appName}-f2'
   location: location
   kind: 'functionapp,linux'
   identity: {
@@ -170,12 +178,243 @@ resource functionAppSDGSimilarity 'Microsoft.Web/sites@2021-03-01' = if (appName
     httpsOnly: true
   }
 }
+param search_api_key string
+param search_api_version string
+param search_index string
+param video_indexer_account_id string
+param video_indexer_api_key string
+param video_indexer_endpoint string
+param video_indexer_location string
+param video_indexer_location_url_prefix string
+param video_indexer_resource_id string
+
+resource functionAppVideoIndexer 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-videoindexer-${substring(uniqueString(resourceGroup().id), 0,3)}') {
+  name: '${appName}-f4'
+  location: location
+  kind: 'functionapp,linux'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: hostingPlan.id
+    siteConfig: {
+
+      appSettings: [
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: toLower(appName)
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: applicationInsights.properties.InstrumentationKey
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: functionWorkerRuntime
+        }
+        {
+          name: 'blob_account'
+          value: '${storageAccountName}'
+        }
+        {
+          name: 'blob_container'
+          value:'${videoContainerName}'
+        }
+        {
+          name: 'blob_container_source'
+          value: '${videoContainerSource}'
+        }
+        {
+          name: 'blob_key'
+          value: '${blobAccountKey}'
+        }
+        {
+          name: 'entities'
+          value: 'transcript,ocr,keywords,topics,faces,labels,brands,namedLocations,namedPeople'
+        }
+        {
+          name: 'search_account'
+          value: '${search_name}'
+        }
+        {
+          name: 'search_api_key'
+          value: '${search_api_key}'
+        }
+        {
+          name: 'search_api_version'
+          value: '${search_api_version}'
+        }
+        {
+          name: 'search_index'
+          value: '${search_index}'
+        }
+        {
+          name: 'video_indexer_account_id'
+          value: '${video_indexer_account_id}'
+        }
+        {
+          name: 'video_indexer_api_key'
+          value: '${video_indexer_api_key}'
+        }
+        {
+          name: 'video_indexer_endpoint'
+          value: '${video_indexer_endpoint}'
+        }
+        {
+          name: 'video_indexer_location'
+          value: '${video_indexer_location}'
+        }
+        {
+          name: 'video_indexer_location_url_prefix'
+          value: '${video_indexer_location_url_prefix}'
+        }
+        {
+          name: 'video_indexer_resource_id'
+          value: '${video_indexer_resource_id}'
+        }
+        {
+          name: 'videoknowledgemining_STORAGE'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+
+      ]
+      ftpsState: 'FtpsOnly'
+      minTlsVersion: '1.2'
+      linuxFxVersion: 'Python|3.9'
+    }
+    httpsOnly: true
+  }
+}
+
+
+resource functionAppVideoCallback 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-videocallback-${substring(uniqueString(resourceGroup().id), 0,3)}') {
+  name: '${appName}-f5'
+  location: location
+  kind: 'functionapp,linux'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    serverFarmId: hostingPlan.id
+    siteConfig: {
+
+      appSettings: [
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+        {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: toLower(appName)
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: applicationInsights.properties.InstrumentationKey
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: functionWorkerRuntime
+        }
+        {
+          name: 'blob_account'
+          value: '${storageAccountName}'
+        }
+        {
+          name: 'blob_container'
+          value:'${videoContainerName}'
+        }
+        {
+          name: 'blob_container_source'
+          value: '${videoContainerSource}'
+        }
+        {
+          name: 'blob_key'
+          value: '${blobAccountKey}'
+        }
+        {
+          name: 'entities'
+          value: 'transcript,ocr,keywords,topics,faces,labels,brands,namedLocations,namedPeople'
+        }
+        {
+          name: 'search_account'
+          value: '${search_name}'
+        }
+        {
+          name: 'search_api_key'
+          value: '${search_api_key}'
+        }
+        {
+          name: 'search_api_version'
+          value: '${search_api_version}'
+        }
+        {
+          name: 'search_index'
+          value: '${search_index}'
+        }
+        {
+          name: 'video_indexer_account_id'
+          value: '${video_indexer_account_id}'
+        }
+        {
+          name: 'video_indexer_api_key'
+          value: '${video_indexer_api_key}'
+        }
+        {
+          name: 'video_indexer_endpoint'
+          value: '${video_indexer_endpoint}'
+        }
+        {
+          name: 'video_indexer_location'
+          value: '${video_indexer_location}'
+        }
+        {
+          name: 'video_indexer_location_url_prefix'
+          value: '${video_indexer_location_url_prefix}'
+        }
+        {
+          name: 'video_indexer_resource_id'
+          value: '${video_indexer_resource_id}'
+        }
+        {
+          name: 'videoknowledgemining_STORAGE'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageAccount.listKeys().keys[0].value}'
+        }
+
+      ]
+      ftpsState: 'FtpsOnly'
+      minTlsVersion: '1.2'
+      linuxFxVersion: 'Python|3.9'
+    }
+    httpsOnly: true
+  }
+}
+
 
 var openai_unique = uniqueString(resourceGroup().id)
 var openai_suffix = substring(openai_unique, 0, 2)
 
-resource functionAppOpenAI 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-openai') {
-  name: '${appName}-f3-${uniquesuffix}'
+resource functionAppOpenAI 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-openai-${substring(uniqueString(resourceGroup().id), 0,3)}') {
+  name: '${appName}-f3'
   location: location
   kind: 'functionapp,linux'
   identity: {

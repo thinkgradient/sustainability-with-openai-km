@@ -815,11 +815,11 @@ input:checked + .slider:before {
 }
 .sdg_image_left {
     float: left;
-    width: 80px;
+    width: 15%;
 }
 
 .summary_text_right {
     float: left;
-    margin: 0 5px 5px 10px;
-    width: 270px;
+    margin: 0 0 0 10px;
+    width: 300px;
 }

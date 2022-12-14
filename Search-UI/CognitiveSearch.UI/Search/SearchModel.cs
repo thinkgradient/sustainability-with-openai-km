@@ -32,6 +32,8 @@ namespace CognitiveSearch.UI
             "metadata_storage_path",
             "metadata_storage_name",
             "metadata_title",
+            "UN_SDG",
+            "summary",
             "id"
 
             // Add fields needed to display results cards

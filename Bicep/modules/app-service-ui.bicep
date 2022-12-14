@@ -1,7 +1,7 @@
 @description('The name of the app service that you wish to create.')
 param appName string 
 param global_prefix string
-param acrName string
+param acrName string 
 
 
 
@@ -10,10 +10,10 @@ param location string = resourceGroup().location
 
 param storageName string
 
-var webappName = appName
-var hostingPlanName = appName
-var applicationInsightsName = appName
-var storageAccountName = '${global_prefix}${storageName}'
+var webappName = '${appName}'
+var hostingPlanName = '${appName}'
+var applicationInsightsName = '${appName}'
+var storageAccountName = '${global_prefix}${storageName}${substring(uniqueString(resourceGroup().id), 0,3)}'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing = {
   name: storageAccountName
@@ -46,7 +46,13 @@ resource app 'Microsoft.Web/sites@2020-06-01' = {
     siteConfig: {
       alwaysOn: true
       minTlsVersion: '1.2'
+      linuxFxVersion: 'DOCKER|nginx'
+      acrUseManagedIdentityCreds: true
       appSettings: [
+        {
+          name: 'DOCKER_ENABLE_CI'
+          value: 'true'
+        }
         {
           name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
           value: 'false'
@@ -67,3 +73,6 @@ resource app 'Microsoft.Web/sites@2020-06-01' = {
     }
   }
 }
+
+output appServiceManagedIdentity string = app.identity.principalId
+output appserviceAppName string = webappName

@@ -14,12 +14,20 @@
     "containerName":{
       "value": "documents"
     },
+    "videoContainerName":{
+      "value": "video-knowledge-mining"
+    },
+    "videoContainerSource":{
+      "value": "video-knowledge-mining-drop"
+    },
     "appName": {
       "value":
           [
           "pdfsplitter",
           "sdgsimilarity",
-          "openai"
+          "openai",
+          "videoindexer",
+          "videocallback"
           ]
     },
     "appInsightsLocation":{
@@ -29,13 +37,22 @@
       "value": "python"
     },
     "kvName":{
-      "value":"airlift-keyvault"
+      "value":"fiopenaikeyvault"
     },
     "webAppName":{
       "value": "web-site-container"
     },
     "cogserviceName":{
       "value": "cogservice"
+    },
+    "search_index":{
+      "value": "airlift-index-video"
+    },
+    "search_api_version":{
+      "value": "2021-04-30-Preview"
+    },
+    "videoIndexName":{
+      "value": "videoindexer"
     }
   }
 }

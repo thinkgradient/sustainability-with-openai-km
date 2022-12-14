@@ -197,28 +197,6 @@ function UpdateMap(data) {
     }
 }
 
-function GetSummary(id, index) {
-    var summary;
-    $.post('/home/getdocumentbyid',
-        {
-            id: id
-        },
-        function (data) {
-            result = data.result;
-            Console.WriteLine("summary: ",result.summary);
-            
-            summary = '<div class="summary-text" style="font-size: 18px;">' + result.summary+'</div>';
-            $('#results-body col-md-11').html(summary);
-            return;
-        }
-    )
-    return;
-
-};
-
-
-
-
 function UpdateResults(data, answer) {
     var resultsHtml = '';
 
@@ -247,7 +225,7 @@ function UpdateResults(data, answer) {
 
         var caption = data.captions[i];
 
-        summary = document.summary;
+       
         
 
         if (answer && caption) {
@@ -273,46 +251,6 @@ function UpdateResults(data, answer) {
         var id = document[data.idField]; 
         var tags = GetTagsHTML(document);
         var path;
-        var unsdg_class = document.UN_SDG;
-        var unsdg_image;
-
-        if (unsdg_class === "No Poverty") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-01.png"/>`;
-        } else if (unsdg_class === "Zero Hunger") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-02.png"/>`;
-        } else if (unsdg_class === "Good Health and Well-Being") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-03.png"/>`;
-        } else if (unsdg_class === "Quality Education") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-04.png"/>`;
-        } else if (unsdg_class === "Gender Equality") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-05.png"/>`;
-        } else if (unsdg_class === "Clean Water and Sanitation") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-06.png"/>`;
-        } else if (unsdg_class === "Affordable and Clean Energy") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-07.png"/>`;
-        } else if (unsdg_class === "Decent Work and Economic Growth") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-08.png"/>`;
-        } else if (unsdg_class === "Industry, Innovation and Infrastructure") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-09.png"/>`;
-        } else if (unsdg_class === "Reduced Inequalities") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-10.png"/>`;
-        } else if (unsdg_class === "Sustainable Cities and Communities") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-11.png"/>`;
-        } else if (unsdg_class === "Responsible Consumption and Production") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-12.png"/>`;
-        } else if (unsdg_class === "Climate Action") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-13.png"/>`;
-        } else if (unsdg_class === "Life Below Water") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-14.png"/>`;
-        } else if (unsdg_class === "Life on Land") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-15.png"/>`;
-        } else if (unsdg_class === "Peace, Justics and Strong Institutions") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-16.png"/>`;
-        } else if (unsdg_class === "Partnerships for the Goals") {
-            unsdg_image = `<img class="sdg_iconDetails" src="/images/sdgs/E-WEB-Goal-17.png"/>`;
-        } else {
-            unsdg_image = `<img  class="sdg_iconDetails">`;
-        }
 
         // get path
         if (data.isPathBase64Encoded) {
@@ -400,22 +338,7 @@ function UpdateResults(data, answer) {
 
             var contentPreview = content ? `<p class="max-lines">${content}</p>` : "";
 
-        
-                        
-
-            function chunkString(str, length) {
-                return str.match(new RegExp('.{1,' + length + '}', 'g'))[0];
-            }
-            if (summary) {
-                summary = chunkString(summary, 200);
-                summary = summary.concat("...");
-            } else if (!summary) {
-                summary = "no text"
-            }
-            
-
-            
-
+            summary = content;
 
             resultsHtml += `<div id="resultdiv${i}" class="${classList}" onclick="ShowDocument('${id}', ${i + 1});">
                                     <div class="search-result">
@@ -431,18 +354,8 @@ function UpdateResults(data, answer) {
                                         <div class="results-body col-md-11">
                                             <h4>${title}</h4>
                                             ${contentPreview}
-                                            
-                                            <h5> ${name}</h5>
-                                            <div class="summary_sdg_container">
-                                                <div class="sdg_image_left">
-                                                    ${unsdg_image}
-                                                </div>
-                                                <div class="summary_text_right">
-                                                 <div style="font-size:.7em;width:100%;float:left;"><h5>${summary}</h5></div>
-                                                </div>
-
-                                            </div>
-
+                                            <h5>${name}</h5>
+                                            <h4>${summary}</h4>
                                             ${tagsContent}
                                             ${resultContent}
                                             
