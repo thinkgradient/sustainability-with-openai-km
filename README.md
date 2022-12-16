@@ -106,7 +106,7 @@ If you hit the following error, then you have to deploy the Video Indexer functi
 - Go to your local directory where you git cloned the repo 
 - Open the Azure-Functions folder and then select the `VideoIndexer` function folder. Click **Select Folder**. 
     - This will open this folder in VSCode 
-- Right click on the function and click Deploy to Function App and select the PDF Split function
+- Right click on the function and click Deploy to Function App and select the Video Indexer function
 
  ### 4b. Now repeat the steps above for the other functions: `PDFSplitFunction`, `OpenAIFunction`, `SDGSimilarity`, `VideoIndexerCallback`, 
 
