@@ -53,6 +53,9 @@
     },
     "videoIndexName":{
       "value": "videoindexer"
+    },
+    "dockerImage":{
+      "value": "airlift-openai-workshop"
     }
   }
 }

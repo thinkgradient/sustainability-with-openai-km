@@ -152,6 +152,19 @@ resource openaiApiVersion 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview'
 }
 
 /*
+  Create User Assigned Identity  
+*/
+param userAssignedIdentityName string = 'userid'
+param userAssignedMangedIdentityName string = '${global_prefix}${userAssignedIdentityName}${substring(uniqueString(resourceGroup().id), 0,3)}id'
+
+
+resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
+  name: userAssignedMangedIdentityName
+  location: location
+
+}
+
+/*
   Deploy Video Indexer service
 */
 
@@ -163,8 +176,9 @@ module deployVideoIndexer './modules/video-indexer.bicep' = {
     global_prefix: global_prefix
     videoAccountName: videoIndexName
     location: location
-    userAssignedMangedIdentityName: '${videoIndexName}${substring(uniqueString(resourceGroup().id), 0,3)}id'
     storageAccountId: '${deployStorageAccount.outputs.storageAccountId}'
+    userAssignedIdentityPrincipalId: '${userAssignedIdentity.properties.principalId}'
+    userAssignedIdentityId: '${userAssignedIdentity.id}'
   }
 }
 
@@ -217,9 +231,52 @@ module deployAIFunctions './modules/ai-functions.bicep' = [for funcname in appNa
     video_indexer_location_url_prefix: 'www'
     video_indexer_resource_id: '${deployVideoIndexer.outputs.videoIndexerResourceId}'
 
+    userAssignedIdentityPrincipalId: '${userAssignedIdentity.properties.principalId}'
+    userAssignedIdentityId: '${userAssignedIdentity.id}'
+
   }
 }]
 
+/*
+  Create Event Grid to fetch documents 
+*/
+
+param systemTopicName string = 'videoTopic'
+
+resource systemTopic 'Microsoft.EventGrid/systemTopics@2021-12-01' = {
+  name: systemTopicName
+  location: location
+  dependsOn: [
+    deployAIFunctions
+  ] 
+  properties: {
+    source: '${deployStorageAccount.outputs.storageAccountId}'
+    topicType: 'Microsoft.Storage.StorageAccounts'
+  }
+}
+
+param systemTopicSub string = 'videoTopic/videoSubtopic'
+
+resource eventSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2021-12-01' = {
+  name: systemTopicSub
+  dependsOn: [
+    systemTopic
+  ] 
+  properties: {
+    destination: {
+      properties: {
+        resourceId: resourceId('Microsoft.Web/sites/functions/', '${global_prefix}-videoindexer-${substring(uniqueString(resourceGroup().id), 0,3)}-f4', 'start-video-indexing')
+      }
+      endpointType: 'AzureFunction'
+    }
+    filter: {
+      includedEventTypes: [
+        'Microsoft.Storage.BlobCreated'
+      ]
+      subjectBeginsWith: '/blobServices/default/containers/video-knowledge-mining-drop/'
+    }
+  }
+}
 
 /*
   Deploy Container Registry
@@ -251,6 +308,7 @@ resource acrResource 'Microsoft.ContainerRegistry/registries@2021-06-01-preview'
 */
 
 param webAppName string 
+param dockerImage string
 
 param webAppNameService string = '${global_prefix}${webAppName}${substring(uniqueString(resourceGroup().id), 0,3)}'
 
@@ -261,6 +319,7 @@ module deployAppService './modules/app-service-ui.bicep' = {
     global_prefix: global_prefix
     appName: webAppNameService
     storageName: storageAccountName
+    dockerImageName: dockerImage
   }
   dependsOn: [
     acrResource
@@ -321,7 +380,7 @@ resource hook 'Microsoft.ContainerRegistry/registries/webhooks@2020-11-01-previe
   location: location
   name: 'webhook1' 
   properties: {
-    serviceUri: '${creds}/docker/hook'
+    serviceUri: '${creds}/api/registry/webhook'
     status: 'enabled'
   
     actions: [

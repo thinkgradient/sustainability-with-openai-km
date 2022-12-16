@@ -73,6 +73,11 @@ resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
 var uniquestring = uniqueString(resourceGroup().id)
 var uniquesuffix = substring(uniquestring, 0, 2)
 
+
+param userAssignedIdentityPrincipalId string 
+param userAssignedIdentityId string
+
+
 resource functionAppPDFSplitter 'Microsoft.Web/sites@2021-03-01' = if (appName == '${global_prefix}-pdfsplitter-${substring(uniqueString(resourceGroup().id), 0,3)}') {
   name: '${appName}-f1'
   location: location

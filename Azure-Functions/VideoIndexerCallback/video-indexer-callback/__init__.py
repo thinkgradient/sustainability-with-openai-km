@@ -18,8 +18,7 @@ def main(req: func.HttpRequest) -> str: #func.HttpResponse:
     if id and state:
         # Get video insights from Video Indexer
         data = get_video_insights(id)
-        if os.environ["DEBUG"] =='true':
-            logging.info(data)
+        
 
         # Perfom data processing
         processed_data, time_entities = process_video_data(data)

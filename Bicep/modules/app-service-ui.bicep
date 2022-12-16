@@ -32,6 +32,7 @@ resource plan 'Microsoft.Web/serverfarms@2020-06-01' = {
   }
 }
 
+param dockerImageName string 
 
 resource app 'Microsoft.Web/sites@2020-06-01' = {
   name: webappName
@@ -46,7 +47,7 @@ resource app 'Microsoft.Web/sites@2020-06-01' = {
     siteConfig: {
       alwaysOn: true
       minTlsVersion: '1.2'
-      linuxFxVersion: 'DOCKER|nginx'
+      linuxFxVersion: 'DOCKER|${dockerImageName}'
       acrUseManagedIdentityCreds: true
       appSettings: [
         {

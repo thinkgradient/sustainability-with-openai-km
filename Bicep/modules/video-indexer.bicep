@@ -8,18 +8,10 @@ param location string
 param global_prefix string
 param storageAccountId string
 param videoAccountName string
-param userAssignedMangedIdentityName string 
 
 
-/*
-  Create User Assigned Identity  
-*/
-
-resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' = {
-  name: userAssignedMangedIdentityName
-  location: location
-
-}
+param userAssignedIdentityPrincipalId string 
+param userAssignedIdentityId string
 
 /*
   Create Media Service with above User Assigned Identity  
@@ -44,7 +36,7 @@ resource mediaService 'Microsoft.Media/mediaservices@2021-06-01' = {
    identity: {
       type: 'UserAssigned'
       userAssignedIdentities: {
-      '${userAssignedIdentity.id}': {}
+      '${userAssignedIdentityId}': {}
       }
    }
 
@@ -72,7 +64,7 @@ resource assignContributorToMediaService 'Microsoft.Authorization/roleAssignment
   scope: mediaService
   properties: {
     description: 'Assign Contributor role for User Assigned Identity to Media Services'
-    principalId: '${userAssignedIdentity.properties.principalId}'
+    principalId: '${userAssignedIdentityPrincipalId}'
     principalType: 'ServicePrincipal'
     roleDefinitionId: roleDefinitionIdVideoIndexer['Contributor'].id
   }
@@ -94,13 +86,13 @@ resource videoIndexerAccount 'Microsoft.VideoIndexer/accounts@2022-08-01' = {
   identity:{
     type: 'UserAssigned'
     userAssignedIdentities : {
-      '${userAssignedIdentity.id}': {}
+      '${userAssignedIdentityId}': {}
     }
   }
   properties: {
     mediaServices: {
       resourceId: mediaServiceResId
-      userAssignedIdentity: '${userAssignedIdentity.id}'
+      userAssignedIdentity: '${userAssignedIdentityId}'
     }
   }
 }
