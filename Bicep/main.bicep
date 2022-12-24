@@ -311,6 +311,7 @@ param webAppName string
 param dockerImage string
 
 param webAppNameService string = '${global_prefix}${webAppName}${substring(uniqueString(resourceGroup().id), 0,3)}'
+var fullDockerImageName = '${acrName}.azurecr.io/${dockerImage}'
 
 module deployAppService './modules/app-service-ui.bicep' = {
   name: 'DeployAppService-${webAppNameService}'
@@ -319,7 +320,7 @@ module deployAppService './modules/app-service-ui.bicep' = {
     global_prefix: global_prefix
     appName: webAppNameService
     storageName: storageAccountName
-    dockerImageName: dockerImage
+    dockerImageName: fullDockerImageName
   }
   dependsOn: [
     acrResource

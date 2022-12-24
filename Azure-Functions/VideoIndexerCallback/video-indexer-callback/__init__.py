@@ -145,8 +145,8 @@ def push_video_data(video_data: dict, video_time_references: list):
 
     # Push data on Azure Cognitive Search index
     response = requests.post(url = endpoint, data = json.dumps(search_data), headers= headers)
-    if os.environ["DEBUG"]== 'true':
-        logging.info(response.json()) 
+    # if os.environ["DEBUG"]== 'true':
+    #     logging.info(response.json()) 
 
     # PUSH Time references data
     # Define Azure Cognitive Search endpoint
@@ -162,8 +162,8 @@ def push_video_data(video_data: dict, video_time_references: list):
 
     # Push data on Azure Cognitive Search index
     response = requests.post(url = endpoint, data = json.dumps(search_data), headers= headers)
-    if os.environ["DEBUG"] == 'true':
-        logging.info(response.json())
+    # if os.environ["DEBUG"] == 'true':
+    #     logging.info(response.json())
 
 
 

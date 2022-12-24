@@ -37,7 +37,7 @@
       "value": "python"
     },
     "kvName":{
-      "value":"fiopenaikeyvault"
+      "value":"fiairliftkv"
     },
     "webAppName":{
       "value": "web-site-container"

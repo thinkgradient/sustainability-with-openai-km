@@ -47,10 +47,10 @@ def compose_response(json_data):
 def transform_value(value):
 
 
-    openai.api_key = os.environ['openai_api_key'] #
-    openai.api_type = os.environ['openai_api_type'] # 
-    openai.api_base = os.environ['openai_api_base'] # 
-    openai.api_version = os.environ['openai_api_version'] #
+    openai.api_key = os.environ['openaiapikey'] #
+    openai.api_type = os.environ['openaiapitype'] # 
+    openai.api_base = os.environ['openaiapibase'] # 
+    openai.api_version = os.environ['openaiapiversion'] #
 
     try:         
         assert ('data' in value), "'data' field is required."
