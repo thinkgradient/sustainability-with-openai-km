@@ -50,7 +50,7 @@ output myContainerUploadSAS string = listServiceSAS(storageAccount.name,'2021-04
   signedProtocol: 'https'
   signedPermission: 'rwl'
   signedServices: 'b'
-  signedExpiry: '2022-12-30T00:00:00Z'
+  signedExpiry: '2023-12-30T00:00:00Z'
 }).serviceSasToken
 
 output blobAccountKey string = '${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'

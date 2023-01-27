@@ -27,7 +27,7 @@
       "value": "azure"
     },
     "openaiapibase":{
-      "value": ""
+      "value": "https://.openai.azure.com/"
     },
     "openaiapiversion":{
       "value": "2022-12-01"
@@ -49,7 +49,7 @@
       "value": "python"
     },
     "kvName":{
-      "value":"fiairliftkv23"
+      "value":""
     },
     "webAppName":{
       "value": "web-site-container"
