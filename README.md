@@ -23,7 +23,7 @@ version 2.27 or newer required**
 - [Install Visual Studio](https://visualstudio.microsoft.com/vs/community/)
 - [Install Docker](https://docs.docker.com/desktop/install/windows-install/)
 - [Install Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)  
-- OpenAI access: will provide with the key and endpoint to connect to the instructor's Azure OpenAI service 
+- OpenAI access: will provide with the key and endpoint to connect to the instructor's Azure OpenAI service. Alternatively, you can utilize your own instance of Azure Open AI. 
 - [Install Postman](https://learning.postman.com/docs/getting-started/installation-and-updates/)
 
  &nbsp;
@@ -77,22 +77,21 @@ Important: Add the key vault name that you just created in kvname in the main.pa
 
 ## 3. Run the Bicep deployment
 
-Add the resource group name you have created in Step 1.
+Open the **paramenters.json** file in an editor of your choice and add the relevant values for the following two keys:
+ - **openaiapikey**
+ - **openaiapibase**
+
+Replace the resource group name you have created in Step 1 in the below command:
 
 `az deployment group create --resource-group <resource_group_name> --template-file main.bicep --parameters main.parameters.json`
 
-After running the command above the following prompts will appear and provide with:
-- OpenAI key: *will be provided*
-- OpenAI type: *azure*
-- endpoint: *will be provided*
-- OpenAI version: *2022-06-01-preview*
 
-After you execute the deployment command, for the first time you will get the following error which for now you can ignore. 
+After you execute the deployment command, for the first time you will get the following error which for now you can ignore.  
 <img src="images/websitecontainer.png" />
 
 Re-run the Bicep deployment command again one more time.
 
-If you hit the following error, then you have to deploy the Video Indexer function code. Please see step 3 below.
+If you hit the following error, then you have to deploy the Video Indexer function code. **Please see step 3** below. Configure tenant setting as per Step 3 and then deploy the Video Index (start-video-indexing) function in Step 4 and re-run the Bicep command again. 
 <img src="images/error1.png" />
 ## 3. Configure VS Code for your tenant
  - Open VSCode
