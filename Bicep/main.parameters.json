@@ -21,13 +21,13 @@
       "value": "video-knowledge-mining-drop"
     },
     "openaiapikey":{
-      "value": "42298bb88b014bda86efc1ae31dff09a"
+      "value": ""
     },
     "openaiapitype":{
       "value": "azure"
     },
     "openaiapibase":{
-      "value": "https://fiairliftopenai.openai.azure.com/"
+      "value": "https://.openai.azure.com/"
     },
     "openaiapiversion":{
       "value": "2022-12-01"
@@ -49,7 +49,7 @@
       "value": "python"
     },
     "kvName":{
-      "value":"fiairliftkv23"
+      "value":""
     },
     "webAppName":{
       "value": "web-site-container"
