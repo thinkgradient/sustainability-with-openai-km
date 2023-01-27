@@ -17,7 +17,7 @@ def main(myblob: func.InputStream):
     
     blob_bytes = myblob.read()
     blob_to_read = io.BytesIO(blob_bytes)
-    inputpdf = PyPDF2.PdfFileReader(blob_to_read)
+    inputpdf = PyPDF2.PdfReader(blob_to_read)
     
     individual_files = []
     stream = io.StringIO()
@@ -25,9 +25,9 @@ def main(myblob: func.InputStream):
 
     container_client = ContainerClient.from_container_url(sas_url)
 
-    for i in range(inputpdf.numPages):
-        output = PyPDF2.PdfFileWriter()
-        output.addPage(inputpdf.getPage(i))
+    for i in range(len(inputpdf.pages)):
+        output = PyPDF2.PdfWriter()
+        output.add_page(inputpdf.pages[i])
         individual_files.append(output)
         if name_without_ext != "processed":
             with open("/tmp/" + name_without_ext + "-page%s.pdf" % (i + 1), "wb") as outputStream:
