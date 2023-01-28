@@ -25,6 +25,7 @@ param appInsightsLocation string
 ])
 param runtime string 
 param storageName string
+param containerName string
 param blobAccountKey string
 param videoContainerName string
 param videoContainerSource string
@@ -43,7 +44,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2019-06-01' existing 
 }
 
 @secure()
-param container_sas_url string
+param connection_str string
 
 
 @secure()
@@ -111,8 +112,12 @@ resource functionAppPDFSplitter 'Microsoft.Web/sites@2021-03-01' = if (appName =
         	value: 'processed'
         }
         {
-        	name: 'sas_url'
-        	value: container_sas_url
+          name: 'container_name'
+          value: containerName
+        }
+        {
+        	name: 'connection_str'
+        	value: connection_str
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'

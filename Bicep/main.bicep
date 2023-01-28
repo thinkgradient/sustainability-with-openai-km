@@ -103,13 +103,13 @@ module deployStorageAccount './modules/storage-account.bicep' = {
 
 param container_url string = 'https://${storageAccountName}.blob.core.windows.net/${containerName}?'
 
-resource containerSasUrl 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
-  parent: kv
-  name: 'container-sas-url'
-  properties: {
-    value: '${container_url}${deployStorageAccount.outputs.myContainerUploadSAS}'
-  }
-}
+// resource containerSasUrl 'Microsoft.KeyVault/vaults/secrets@2021-11-01-preview' = {
+//   parent: kv
+//   name: 'container-sas-url'
+//   properties: {
+//     value: '${container_url}${deployStorageAccount.outputs.myContainerUploadSAS}'
+//   }
+// }
 
 param openaiapikey string
 
@@ -210,8 +210,9 @@ module deployAIFunctions './modules/ai-functions.bicep' = [for funcname in appNa
     global_prefix: global_prefix
     storageName: storageAccountName
     videoContainerName: videoContainerName
+    containerName: '${deployStorageAccount.outputs.containerNameStr}'
     videoContainerSource: videoContainerSource
-    container_sas_url: '${container_url}${deployStorageAccount.outputs.myContainerUploadSAS}'
+    connection_str: '${deployStorageAccount.outputs.connectionString}'
     blobAccountKey: '${deployStorageAccount.outputs.blobAccountKey}'
 
     openai_api_key: openaiapikey

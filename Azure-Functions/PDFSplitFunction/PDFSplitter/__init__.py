@@ -12,7 +12,8 @@ def main(myblob: func.InputStream):
                  f"Name: {myblob.name}\n"
                  f"Blob Size: {myblob.length} bytes")
     target_folder = os.environ['target_folder']
-    sas_url = os.environ['sas_url']
+    connection_str = os.environ['connection_str']
+    container_name = os.environ['container_name']
     name_without_ext = myblob.name.split("/")[1].split(".")[0]
     
     blob_bytes = myblob.read()
@@ -23,7 +24,7 @@ def main(myblob: func.InputStream):
     stream = io.StringIO()
     
 
-    container_client = ContainerClient.from_container_url(sas_url)
+    container_client = ContainerClient.from_connection_string(connection_str, container_name=container_name)
 
     for i in range(len(inputpdf.pages)):
         output = PyPDF2.PdfWriter()

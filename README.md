@@ -116,23 +116,8 @@ If you hit the following error, then you have to deploy the Video Indexer functi
  
  &nbsp;
 
- ### 4c. Once you deploy PDFSplitFunction carry out the following steps:
-  - Download Storage Explorer from https://azure.microsoft.com/en-us/products/storage/storage-explorer/
-  -  <img src="images/storagexplorer.png" />
-  - Deselect all subscription and select the one where you've deployed the resources and click on **Open Explorer**
-  - Expand your subscription 
-  - Expand Storage Accounts
-  - Find the storage account that was created by the Bicep deployment command and expand it
-  - Expand Blob Containers
-  - Right click on **Documents** container and click on **Get Shared Access Signature..**
-  - Set the **Expiry Date** to a date in the future
-  - Select the following permissions: Read, Write, Create, Add
-  - Click **Create**
-  - Copy the **URL** link
-  - Go to Azure Portal and select the relevant PDF Split function app
-  - In the Function App, click on the Configuration tab under Settings and click on the **sas_url** environment variable to edit it. Paste the URL you copied earlier. Click OK and then click **Save** and **Continue**.
-
-### 4e. Once you deploy the VideIndexer function carry out the following steps:
+ 
+### 4c. Once you deploy the VideIndexer function carry out the following steps:
 - Go to Azure Portal and select the relevant Video Callback function app
 - From the left pane, click on Functions then "video-indexer-callback". Click on **Code + Test** and then **Get function URL**.
 - Copy the URL which includes the function code too then in the Azure Portal go to the Video Indexer function app.
