@@ -96,7 +96,7 @@ def transform_value(value):
             })
 
 
-def gpt3_completion(prompt, engine='davinci-002', temp=0.6, top_p=1.0, tokens=2000, freq_pen=0.25, pres_pen=0.0):
+def gpt3_completion(prompt, engine='text-davinci-003', temp=0.6, top_p=1.0, tokens=2000, freq_pen=0.25, pres_pen=0.0):
     max_retry = 5
 
     retry = 0
